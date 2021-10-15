@@ -10,7 +10,7 @@ import sampleData from "@/assets/sample.json";
 export default {
   name: 'App',
   mounted() {
-    this.dappModel = new BvModel(document.getElementById("container"), sampleData, false);
+    this.dappModel = new BvModel(document.getElementById("container"), sampleData);
   },
   beforeDestroy() {
     this.dappModel.clear();

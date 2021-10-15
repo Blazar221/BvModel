@@ -5,12 +5,12 @@ import Stats from 'three/examples/jsm/libs/stats.module.js'
 import ModelHelper from './modelHelper'
 
 export class BvModel {
-  constructor(domElement, data, scEnable) {
+  constructor(domElement, data) {
     this.clear()
 
     this.__initThree(domElement)
 
-    this.__initSphere(data['nodeTable'], scEnable)
+    this.__initSphere(data['nodeTable'])
     this.__initLine(data['linkTable'])
 
     this.__initClick()
@@ -63,8 +63,6 @@ export class BvModel {
     this.lastLine = null
     // SpriteText
     this.spriteTextArray = []
-    // ScPoint
-    this.scPoints = null
     // Data Structure
     this.sphereId2EntityMaps = null
     this.sphereIndex2RelationMaps = null
@@ -172,7 +170,7 @@ export class BvModel {
    * Initialization Methods
    */
 
-  __initSphere(bvData, scEnable) {
+  __initSphere(bvData) {
     this.sphereId2EntityMaps = []
     this.sphereIndex2RelationMaps = []
     this.sphereIndex2LineMaps = []
@@ -193,44 +191,35 @@ export class BvModel {
       const dummyGenres = []
       const dummyAlphas = []
 
-      const scPos = []
-      const scSizes = []
-      const scGenres = []
-      const scAlphas = []
-      const scColors = []
-      let scColorIndex = 0
-
       dataOfDays.forEach((data, index) => {
-        const id = data['dr_id']
+        const id = data['id']
         const x = data['x'] // The whole model should use origin as center
         const y = data['y']
         const z = data['z']
-        const name = data['name']
-        const category = data['category']
-        const userCount = data['user_count']
-        const txnCount = data['transaction_count']
-        const smartContracts = data['contracts']
+        const hint = data['hint']
+        const type = data['type']
+        const color = data['color']
+        const flashSpeed = data['flashSpeed']
+        const size = data['size']
 
-        const node = new ModelHelper.BvNode(id, index, x, y, z, name, category, userCount, txnCount, smartContracts)
+        const node = new ModelHelper.BvNode(id, index, x, y, z, hint, type, size, flashSpeed, color)
         sphereId2Entity.set(id, node)
         sphereIndex2Relation.set(index, [])
 
-        // userCount -> color
-        const color = ModelHelper.MODEL_COLOR.getThreeColorByCategory(category, userCount)
-        color.toArray(colors, index * 3)
-        //
+        // Color
+        new Three.Color(color).toArray(colors, index * 3)
+        // Position
         positions.push(x, y, z)
-        // smart contract number -> size
-        const size = Math.max(Math.log2(node.contractArr.length) / 2.7, 0.1)
+        // Size
         sizes.push(size)
-        // txn number -> flash frequency
-        speeds.push(Math.min(txnCount, 200))
+        // FlashSpeed
+        speeds.push(flashSpeed)
 
-        dummySizes.push(size * ModelHelper.bv_DUMMY_POINT_SCALE)
+        dummySizes.push(size * ModelHelper.BV_DUMMY_POINT_SCALE)
         dummyAlphas.push(1.0)
         dummyGenres.push(0)
 
-        const spriteTextLod = ModelHelper.getBvSpriteTextLod(name, x, y, z, 30000, {
+        const spriteTextLod = ModelHelper.getBvSpriteTextLod(hint, x, y, z, 30000, {
           'borderColor': {
             r: 0,
             g: 0,
@@ -240,25 +229,6 @@ export class BvModel {
         })
         this.scene.add(spriteTextLod)
         spriteTexts.push(spriteTextLod)
-
-        if (scEnable) { // Add smart contract point will make model slow
-          for (let i = 0; i < node.contractArr.length; i++) {
-            const r = Math.random() * size * 450
-            const beta = Math.random() * 2 * Math.PI
-            const theta = Math.random() * Math.PI
-
-            const scX = r * Math.sin(theta) * Math.cos(beta) + x
-            const scY = r * Math.sin(theta) * Math.sin(beta) + y
-            const scZ = r * Math.cos(theta) + z
-
-            scPos.push(scX, scY, scZ)
-            scSizes.push(40)
-            scGenres.push(2)
-            scAlphas.push(1.0)
-            color.toArray(scColors, scColorIndex * 3)
-            scColorIndex++
-          }
-        }
       })
       this.sphereId2EntityMaps.push(sphereId2Entity)
       this.sphereIndex2RelationMaps.push(sphereIndex2Relation)
@@ -279,11 +249,6 @@ export class BvModel {
       dummyPoints.visible = false
       this.dummyPointsArray.push(dummyPoints)
       this.scene.add(dummyPoints)
-
-      if (scEnable) {
-        this.scPoints = ModelHelper.getBvPoints(scPos, scColors, scSizes, scGenres, scAlphas)
-        this.scene.add(this.scPoints)
-      }
 
     })
     // Enable layer 0

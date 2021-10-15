@@ -1,8 +1,7 @@
-/*
 import * as Three from 'three'
-import ball from '../../../../../public/ball.png'
-import polyhedron from '../../../../../public/polyhedron.png'
-import disc from '../../../../../public/disc.png'
+import ball from '@/assets/ball.png'
+import polyhedron from '@/assets/polyhedron.png'
+import disc from '@/assets/disc.png'
 
 const vertexShader = `
   attribute float size;
@@ -81,4 +80,4 @@ export function getBvPoints(positions, colors, sizes, genres, alphas) {
 
   return new Three.Points(geometry, bvPointMaterial)
 }
-*/
+

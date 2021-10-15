@@ -61,6 +61,7 @@ export class BvLOD extends Three.Object3D {
 
       _v1$4.setFromMatrixPosition(this.matrixWorld)
 
+      // eslint-disable-next-line no-unused-vars
       const distance = raycaster.ray.origin.distanceTo(_v1$4)
 
       this.innerObject.raycast(raycaster, intersects)
@@ -71,6 +72,7 @@ export class BvLOD extends Three.Object3D {
 
   update(camera) {
 
+    // eslint-disable-next-line no-unused-vars
     const levels = this.levels
 
     if (this.innerObject) {
