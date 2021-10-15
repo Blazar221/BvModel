@@ -1,5 +1,5 @@
 export class BvNode {
-  constructor(id, index, x, y, z, hint, type, size, flashSpeed, color) {
+  constructor(id, index, x, y, z, hint, type, size, flashSpeed) {
     this.id = id
     this.index = index
     this.x = x
@@ -9,6 +9,5 @@ export class BvNode {
     this.type = type
     this.size = size
     this.flashSpeed = flashSpeed
-    this.color = color
   }
 }
