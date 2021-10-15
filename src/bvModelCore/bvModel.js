@@ -65,7 +65,7 @@ export class BvModel {
         this.spriteTextArray = []
         // Data Structure
         this.sphereId2EntityMaps = null
-        this.sphereIndex2RelationMaps = null
+        this.sphereIndex2RawEdgeMaps = null
         this.sphereIndex2LineMaps = null
         // Click
         this.raycaster = null
@@ -118,7 +118,7 @@ export class BvModel {
             this.lastLine.visible = false
         }
         this.currentLine = this.sphereIndex2LineMaps[this.currentLayer].get(index)
-        if (this.currentLine) {// Some bv has no line(relation)
+        if (this.currentLine) {// Some bv has no line(rawEdge)
             this.currentLine.visible = true
         }
         this.lastChosenIndex = index
@@ -172,13 +172,13 @@ export class BvModel {
 
     __initSphere(bvData) {
         this.sphereId2EntityMaps = []
-        this.sphereIndex2RelationMaps = []
+        this.sphereIndex2RawEdgeMaps = []
         this.sphereIndex2LineMaps = []
         this.spriteTextArray = []
 
         bvData.forEach(dataOfDays => {
             const sphereId2Entity = new Map()
-            const sphereIndex2Relation = new Map()
+            const sphereIndex2RawEdge = new Map()
             const sphereIndex2Line = new Map()
             const spriteTexts = []
 
@@ -203,7 +203,7 @@ export class BvModel {
 
                 const node = new ModelHelper.BvNode(id, index, x, y, z, hint, type, size, flashSpeed)
                 sphereId2Entity.set(id, node)
-                sphereIndex2Relation.set(index, [])
+                sphereIndex2RawEdge.set(index, [])
 
                 // Color
                 const color = ModelHelper.MODEL_COLOR.getThreeColorByType(type)
@@ -211,7 +211,6 @@ export class BvModel {
                 // Position
                 positions.push(x, y, z)
                 // Size
-                size = size / 10
                 sizes.push(size)
                 // FlashSpeed
                 speeds.push(flashSpeed)
@@ -232,7 +231,7 @@ export class BvModel {
                 spriteTexts.push(spriteTextLod)
             })
             this.sphereId2EntityMaps.push(sphereId2Entity)
-            this.sphereIndex2RelationMaps.push(sphereIndex2Relation)
+            this.sphereIndex2RawEdgeMaps.push(sphereIndex2RawEdge)
             this.sphereIndex2LineMaps.push(sphereIndex2Line)
             // TODO A better way to store SpriteText:
             // Only make new SpriteText when necessary,
@@ -256,36 +255,36 @@ export class BvModel {
         this.__switchLayer(0)
     }
 
-    __initLine(relationData) {
-        relationData.forEach((dataOfDay, index) => {
+    __initLine(edgeData) {
+        edgeData.forEach((dataOfDay, index) => {
             const sphereIndex2Line = this.sphereIndex2LineMaps[index]
             const sphereId2Entity = this.sphereId2EntityMaps[index]
-            const sphereIndex2Relation = this.sphereIndex2RelationMaps[index]
+            const sphereIndex2RawEdge = this.sphereIndex2RawEdgeMaps[index]
             dataOfDay.forEach(data => {
-                const bv1 = sphereId2Entity.get(data['drId1'])
-                const bv2 = sphereId2Entity.get(data['drId2'])
-                const value = data['relation']
+                const bv1 = sphereId2Entity.get(data['id1'])
+                const bv2 = sphereId2Entity.get(data['id2'])
+                const value = data['value']
 
-                const relation = new ModelHelper.bvRelation(bv1, bv2, value)
-                sphereIndex2Relation.get(bv1.index).push(relation)
-                sphereIndex2Relation.get(bv2.index).push(relation)
+                const rawEdge = new ModelHelper.BvRawEdge(bv1, bv2, value)
+                sphereIndex2RawEdge.get(bv1.index).push(rawEdge)
+                sphereIndex2RawEdge.get(bv2.index).push(rawEdge)
             })
-            sphereIndex2Relation.forEach((relationArr, bvIndex) => {
-                if (relationArr.length !== 0) { // Some bvNode has no relation
+            sphereIndex2RawEdge.forEach((edgeArr, bvIndex) => {
+                if (edgeArr.length !== 0) { // Some bvNode has no edge
                     const posArr = []
                     const colorArr = []
                     const widthArr = []
 
-                    relationArr.forEach((relation, innerIndex) => {
-                        posArr.push(relation.x1, relation.y1, relation.z1, relation.x2, relation.y2, relation.z2)
+                    edgeArr.forEach((rawEdge, innerIndex) => {
+                        posArr.push(rawEdge.x1, rawEdge.y1, rawEdge.z1, rawEdge.x2, rawEdge.y2, rawEdge.z2)
 
-                        const color1 = ModelHelper.MODEL_COLOR.getThreeColorByCategory(relation.category1, relation.colorOffset1)
-                        const color2 = ModelHelper.MODEL_COLOR.getThreeColorByCategory(relation.category2, relation.colorOffset2)
+                        const color1 = ModelHelper.MODEL_COLOR.getThreeColorByType(rawEdge.type1)
+                        const color2 = ModelHelper.MODEL_COLOR.getThreeColorByType(rawEdge.type2)
 
                         color1.toArray(colorArr, innerIndex * 6)
                         color2.toArray(colorArr, innerIndex * 6 + 3)
 
-                        const width = Math.min(8.0, Math.max(relation.value, 3.0))
+                        const width = Math.min(8.0, Math.max(rawEdge.value, 3.0))
                         widthArr.push(width)// Experiment proves there are 6 times vertex shader calling
                     })
                     const line = ModelHelper.getBvLines(posArr, colorArr, widthArr)

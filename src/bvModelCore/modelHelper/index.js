@@ -29,7 +29,7 @@ export default {
   Link: Entity.Link,
   LinkDetail: Entity.LinkDetail,
   BvNode: Entity.BvNode,
-  DappRelation: Entity.DappRelation,
+  BvRawEdge: Entity.BvRawEdge,
   // Tooltip
   InfoLabel,
   InteractionHelper,
