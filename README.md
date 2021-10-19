@@ -1,5 +1,5 @@
 # BvModel
-Bigdata Visualization Model
+Bigdata Visualization 3D Model in Browser
 <br>
 Sphere Effect
 <br>
